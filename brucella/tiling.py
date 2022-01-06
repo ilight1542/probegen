@@ -1,7 +1,7 @@
 import argparse
 import math
 
-parser = argparse.ArgumentParser(description='tile a set of genomes for probe')
+parser = argparse.ArgumentParser(description='tile a set of genomes for capture probe')
 parser.add_argument('-i', '--input', metavar='input genomes', \
     required=True, nargs='+', help="input genomes to be made into probe")
 parser.add_argument('-l', '--length', metavar="length of probe",\
@@ -13,6 +13,7 @@ parser.add_argument('--masked_regions', metavar="dustmasker output acclist",\
     required = False, nargs=1, help="fasta header --> low complexity regions, single file")
 parser.add_argument('--masked_cutoff', metavar="masked probe percentage",\
     required = False, nargs=1, help="percentage of probe that can be masked before discarding (eg 10 == up to 10 percent of read can be masked)")
+parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering)")
 args=parser.parse_args()
 
 ## required argumets
@@ -21,7 +22,7 @@ step_size=int(args.step_size[0])
 
 ## sliding window approach with set corresponding to masked regions
 ## eg set(10,11,12,..,16) for window 10..70 has 6 masked reads
-## then just set.pop(10) if 10 in set and add 71 if 71 in masked set
+## then just set.remove(10) if 10 in set and add 71 if 71 in masked set
 
 ## functions for parsing optional arguments
 def parse_masked(masked_input):
@@ -39,6 +40,14 @@ def parse_masked(masked_input):
                 for i in range(start, end+1):
                     masked_dict_sets[key].add(i)
     return masked_dict_sets
+
+def reverse_complement(tile):
+    rev_comp_tile=""
+    comp={"A":"T","T":"A","C":"G","G":"C"}
+    for i in range(len(tile),0,-1):
+        idx=i-1
+        rev_comp_tile+=comp[tile[idx]]
+    return rev_comp_tile     
 
 def is_overlapping(start,length,segments):
     ## return number of reads overlapping with masked regions for each probe
@@ -69,7 +78,7 @@ def remove_from_set(set, start, step_size, len, masked_set):
         if i in masked_set:
             set.add(i)
 
-def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_sets):
+def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_sets, check_reverse_complement=False):
     tiling_set=set()
     for current_input in input_fastas:
         with open(current_input, newline='\n') as f:
@@ -77,6 +86,7 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
                 if line.startswith(">"):
                     current_header=str(line)[:-1]
                 else:
+                    line=line[:-1]
                     iter_needed=math.ceil(len(line)/int(step_size))
                     start=0  ## used only if masking regions
                     masked_set=set()
@@ -85,9 +95,10 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
                             masked_set.add(i) ## add index to masked set if in masked_dict_sets (preprocessing)
                     for iterations in range(iter_needed):
                         tile=line[:length] ## get tile of given length
-                        if tile in tiling_set: ## check if already in set
-                            pass
-                        elif tile == "" or tile =="\n":
+                        if check_reverse_complement:
+                            if reverse_complement(tile) in tiling_set:
+                                pass
+                        elif tile in tiling_set: ## check if already in set
                             pass
                         else: ## check if the len of the set is above cutoff
                             if len(masked_set) < ((masked_cutoff/100)*length):
@@ -99,7 +110,7 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
 
 
 ## main function to create probe set
-def tiling(input_fastas, length,step_size):
+def tiling(input_fastas, length, step_size, check_reverse_complement=False):
     tiling_set=set()
     new_uniq_tiles_per_ref={}
     for current_input in input_fastas:
@@ -111,12 +122,14 @@ def tiling(input_fastas, length,step_size):
                     current_header=str(line)[:-1]
                     new_uniq_tiles_per_ref[current_header] = 0
                 else:
+                    line=line[:-1]
                     iter_needed=math.ceil(len(line)/int(step_size))
                     for iterations in range(iter_needed):
                         tile=line[:length] ## get tile of given length
-                        if tile in tiling_set: ## check if already in set
-                            pass
-                        elif tile == "" or tile =="\n":                            
+                        if check_reverse_complement:
+                            if reverse_complement(tile) in tiling_set:
+                                pass
+                        elif tile in tiling_set: ## check if already in set
                             pass
                         else:
                             if len(tile) == length: ## 
@@ -134,6 +147,6 @@ def write_output(tiling_set,filename="probe_set.txt"):
 if __name__ == '__main__':
     if args.masked_regions:
         masked_regions=parse_masked(args.masked_regions[0])
-        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions), args.out_name[0])
+        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement), args.out_name[0])
     else:
-        write_output(tiling(args.input, length, step_size))
+        write_output(tiling(args.input, length, step_size, args.reverse_complement))
