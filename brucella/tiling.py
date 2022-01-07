@@ -20,6 +20,9 @@ parser.add_argument('--convert_n', action='store_true', help="convert N to rando
 args=parser.parse_args()
 
 ## required argumets
+if args.outfmt:
+    outfmt=args.outfmt
+else: outfmt="txt"
 length=int(args.length[0])
 step_size=int(args.step_size[0])
 
@@ -107,12 +110,12 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
                             masked_set.add(i) ## add index to masked set if in masked_dict_sets (preprocessing)
                     for iterations in range(iter_needed):
                         tile=line[:length] ## get tile of given length
-                        if check_reverse_complement or convert_n:
+                        if convert_n or check_reverse_complement:
                             rc_conv_n=reverse_complement(tile, convert_n)
-                            if check_reverse_complement: rc= rc_conv_n[0]
-                            if convert_n: tile=rc_conv_n[1]
-                            if rc in tiling_set or tile in tiling_set:
-                                pass
+                            if convert_n:
+                                tile=rc_conv_n[1]
+                        if check_reverse_complement and rc_conv_n[0] in tiling_set:
+                            pass
                         elif tile in tiling_set: ## check if already in set
                             pass
                         else: ## check if the len of the set is above cutoff
@@ -141,12 +144,12 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, conv
                     iter_needed=math.ceil(len(line)/int(step_size))
                     for iterations in range(iter_needed):
                         tile=line[:length] ## get tile of given length
-                        if check_reverse_complement or convert_n:
+                        if convert_n or check_reverse_complement:
                             rc_conv_n=reverse_complement(tile, convert_n)
-                            if check_reverse_complement: rc= rc_conv_n[0]
-                            if convert_n: tile=rc_conv_n[1]
-                            if rc in tiling_set or tile in tiling_set:
-                                pass
+                            if convert_n:
+                                tile=rc_conv_n[1]
+                        if check_reverse_complement and rc_conv_n[0] in tiling_set:
+                            pass
                         elif tile in tiling_set: ## check if already in set
                             pass
                         else:
@@ -156,15 +159,25 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, conv
                         line=line[step_size:]
     return tiling_set
 
-def write_output(tiling_set,filename="probe_set.txt"):
-    if '.txt' not in filename:
-        filename+='.txt'
-    with open(filename, "w") as file_out:
-        file_out.write('\n'.join(list(tiling_set)))
+def write_output(tiling_set,filename="probe_set.txt", outfmt="txt"):
+    if outfmt=="txt":
+        if '.txt' not in filename:
+            filename+='.txt'
+        with open(filename, "w") as file_out:
+            file_out.write('\n'.join(list(tiling_set)))
+    elif outfmt=="fasta":
+        if '.fasta' not in filename:
+            filename+='.fasta'
+        index=0
+        with open(filename, "w") as file_out:
+            for line in list(tiling_set):
+                file_out.write(">"+str(index)+"\n")
+                file_out.write(line+"\n")
+                index+=1
 
 if __name__ == '__main__':
     if args.masked_regions:
         masked_regions=parse_masked(args.masked_regions[0])
-        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0])
+        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt)
     else:
-        write_output(tiling(args.input, length, step_size, args.reverse_complement))
+        write_output(tiling(args.input, length, step_size, args.reverse_complement),args.out_name[0], outfmt)
