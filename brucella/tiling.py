@@ -17,6 +17,7 @@ parser.add_argument('--masked_cutoff', metavar="masked probe percentage",\
 parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering)")
 parser.add_argument('--outfmt', metavar="txt, fasta, all", help="output format, .txt or .fasta")
 parser.add_argument('--convert_n', action='store_true', help="convert N to random base for probe set")
+parser.add_argument('--randseed', nargs=1, help="random seed for consistent probe construction across multiple runs")
 args=parser.parse_args()
 
 ## required argumets
@@ -25,6 +26,8 @@ if args.outfmt:
 else: outfmt="txt"
 length=int(args.length[0])
 step_size=int(args.step_size[0])
+
+random.seed=(args.randseed[0])
 
 ## sliding window approach with set corresponding to masked regions
 ## eg set(10,11,12,..,16) for window 10..70 has 6 masked reads
@@ -52,12 +55,13 @@ def reverse_complement(tile, convert_n=False):
     rev_comp_tile=""
     comp={"A":"T","T":"A","C":"G","G":"C","N":"N"}
     bases=["A","T","C","G"]
+    non_atcg={"N": bases, "R":["A","G"], "Y":["C","T"], "K":["G","T"], "M":["A","C"],"S":["C","G"],"W":["A","T"],"B":["T","C","G"],"D":["A","T","G"],"H":["A","T","C"],"V":["A","C","G"]}
     for i in range(len(tile),0,-1):
         idx=i-1
         if convert_n:
             to_add=tile[idx]
-            if to_add=="N": 
-                to_add=bases[random.randrange(0,4)]
+            if to_add not in bases: 
+                to_add=random.choice(non_atcg[to_add])
                 tile=tile[:idx]+to_add+tile[idx+1:]
             rev_comp_tile+=comp[to_add]
         else:
@@ -191,4 +195,4 @@ if __name__ == '__main__':
         masked_regions=parse_masked(args.masked_regions[0])
         write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt)
     else:
-        write_output(tiling(args.input, length, step_size, args.reverse_complement),args.out_name[0], outfmt)
+        write_output(tiling(args.input, length, step_size, args.reverse_complement, args.convert_n),args.out_name[0], outfmt)
