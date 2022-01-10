@@ -15,7 +15,7 @@ parser.add_argument('--masked_regions', metavar="dustmasker output acclist",\
 parser.add_argument('--masked_cutoff', metavar="masked probe percentage",\
     required = False, nargs=1, help="percentage of probe that can be masked before discarding (eg 10 == up to 10 percent of read can be masked)")
 parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering)")
-parser.add_argument('--outfmt', metavar="txt, fasta", help="output format, .txt or .fasta")
+parser.add_argument('--outfmt', metavar="txt, fasta, all", help="output format, .txt or .fasta")
 parser.add_argument('--convert_n', action='store_true', help="convert N to random base for probe set")
 args=parser.parse_args()
 
@@ -65,6 +65,7 @@ def reverse_complement(tile, convert_n=False):
     return (rev_comp_tile,tile)
 
 def is_overlapping(start,length,segments):
+    ## DEPRECIATED, not used
     ## return number of reads overlapping with masked regions for each probe
     ## essentially just Binary search since our lists of intervals are sorted
     start_index=0
@@ -159,21 +160,31 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, conv
                         line=line[step_size:]
     return tiling_set
 
+def write_fasta(tiling_set,filename="probe_set.fasta"):
+    if '.fasta' not in filename:
+        filename+='.fasta'
+    index=0
+    with open(filename, "w") as file_out:
+        for line in list(tiling_set):
+            file_out.write(">"+str(index)+"\n")
+            file_out.write(line+"\n")
+            index+=1
+
+def write_text(tiling_set,filename="probe_set.txt"):
+    if '.txt' not in filename:
+            filename+='.txt'
+    with open(filename, "w") as file_out:
+        file_out.write('\n'.join(list(tiling_set)))
+
 def write_output(tiling_set,filename="probe_set.txt", outfmt="txt"):
     if outfmt=="txt":
-        if '.txt' not in filename:
-            filename+='.txt'
-        with open(filename, "w") as file_out:
-            file_out.write('\n'.join(list(tiling_set)))
+        write_text(tiling_set,filename)
     elif outfmt=="fasta":
-        if '.fasta' not in filename:
-            filename+='.fasta'
-        index=0
-        with open(filename, "w") as file_out:
-            for line in list(tiling_set):
-                file_out.write(">"+str(index)+"\n")
-                file_out.write(line+"\n")
-                index+=1
+        write_fasta(tiling_set,filename)
+    elif outfmt=="all":
+        write_text(tiling_set,filename)
+        write_fasta(tiling_set,filename)
+        
 
 if __name__ == '__main__':
     if args.masked_regions:
