@@ -2,7 +2,7 @@ import argparse
 import math
 import random
 
-parser = argparse.ArgumentParser(description='tile a set of genomes for capture probe')
+parser = argparse.ArgumentParser(description='tile a set of genomes for capture probe. mandatory fields, -i, -l, -s')
 parser.add_argument('-i', '--input', metavar='input genomes', \
     required=True, nargs='+', help="input genomes to be made into probe")
 parser.add_argument('-l', '--length', metavar="length of probe",\
@@ -51,7 +51,7 @@ def parse_masked(masked_input):
     return masked_dict_sets
 
 def reverse_complement(tile, convert_n=False):
-    ## generates reverse complement of tile, and will also mask any N as a random base
+    """generates reverse complement of tile, and will also mask any N (or other ambiguous base calls) as a random base (of possible bases)"""
     rev_comp_tile=""
     comp={"A":"T","T":"A","C":"G","G":"C","N":"N"}
     bases=["A","T","C","G"]
@@ -68,27 +68,8 @@ def reverse_complement(tile, convert_n=False):
             rev_comp_tile+=comp[tile[idx]]
     return (rev_comp_tile,tile)
 
-def is_overlapping(start,length,segments):
-    ## DEPRECIATED, not used
-    ## return number of reads overlapping with masked regions for each probe
-    ## essentially just Binary search since our lists of intervals are sorted
-    start_index=0
-    end_index=len(segments)
-    found=False
-    end = start + length
-    while not found and start_index != end_index:
-        search_index=(start_index+end_index)//2
-        if start >= segments[search_index][1]:
-            start_index=search_index+1
-        elif end <= segments[search_index][0]:
-            end_index=search_index
-        else:
-            overlap = min(end,segments[search_index][1]) - max(start,segments[search_index][0])
-            found=True
-            return overlap
-    return 0
-
 def remove_from_set(set, start, step_size, len, masked_set):
+    """updates set counting how many bases in current tile are marked as low complexity"""
     to_remove=range(start,start+step_size)
     to_add=range(start+len,start+len+step_size)
     for i in to_remove:
@@ -99,6 +80,7 @@ def remove_from_set(set, start, step_size, len, masked_set):
             set.add(i)
 
 def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_sets, check_reverse_complement=False, convert_n=False):
+    """tiling for genomes when dustmasker should be taken into account, slower than tiling() but both are linear in time complexity"""
     tiling_set=set()
     for current_input in input_fastas:
         with open(current_input, newline='\n') as f:
@@ -134,6 +116,7 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
 
 ## main function to create probe set
 def tiling(input_fastas, length, step_size, check_reverse_complement=False, convert_n=True):
+    """tiling, """
     tiling_set=set()
     new_uniq_tiles_per_ref={}
     for current_input in input_fastas:
