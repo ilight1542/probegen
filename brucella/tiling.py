@@ -1,6 +1,7 @@
 import argparse
 import math
 import random
+from Bio import SeqIO
 
 parser = argparse.ArgumentParser(description='tile a set of genomes for capture probe. mandatory fields, -i, -l, -s')
 parser.add_argument('-i', '--input', metavar='input genomes', \
@@ -39,6 +40,7 @@ def parse_masked(masked_input):
     with open(masked_input, newline="\n") as f:
         for line in f:
             (key,start,end)=line.split('\t')
+            key=key.split(' ')[0][1:] ## format to match seqIO record.id
             start=int(start)
             end=int(end)
             if key in masked_dict_sets:
@@ -66,7 +68,7 @@ def reverse_complement(tile, convert_n=False):
             rev_comp_tile+=comp[to_add]
         else:
             rev_comp_tile+=comp[tile[idx]]
-    return (rev_comp_tile,tile)
+    return [rev_comp_tile,tile]
 
 def remove_from_set(set, start, step_size, len, masked_set):
     """updates set counting how many bases in current tile are marked as low complexity"""
@@ -82,100 +84,127 @@ def remove_from_set(set, start, step_size, len, masked_set):
 def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_sets, check_reverse_complement=False, convert_n=False):
     """tiling for genomes when dustmasker should be taken into account, slower than tiling() but both are linear in time complexity"""
     tiling_set=set()
+    tiling_set_reverse_complements={}
     for current_input in input_fastas:
-        with open(current_input, newline='\n') as f:
-            for line in f:
-                if line.startswith(">"):
-                    current_header=str(line)[:-1]
-                else:
-                    line=line[:-1]
-                    iter_needed=math.ceil(len(line)/int(step_size))
-                    start=0  ## used only if masking regions
-                    masked_set=set()
-                    for i in range(start,length): ## initialize set of masked bases for this chromosome
-                        if i in masked_dict_sets[current_header]: 
-                            masked_set.add(i) ## add index to masked set if in masked_dict_sets (preprocessing)
-                    for iterations in range(iter_needed):
-                        tile=line[:length] ## get tile of given length
-                        if convert_n or check_reverse_complement:
-                            rc_conv_n=reverse_complement(tile, convert_n)
-                            if convert_n:
-                                tile=rc_conv_n[1]
-                        if check_reverse_complement and rc_conv_n[0] in tiling_set:
-                            pass
-                        elif tile in tiling_set: ## check if already in set
-                            pass
-                        else: ## check if the len of the set is above cutoff
-                            if len(masked_set) < ((masked_cutoff/100)*length):
-                                tiling_set.add(tile)
-                            remove_from_set(masked_set, start, step_size, length, masked_dict_sets[current_header])
-                            start+=step_size
-                        line=line[step_size:]
-    return tiling_set
+        with open(current_input) as f:
+            for record in SeqIO.parse(f, "fasta"):
+            ## get section of fasta ready for tiling
+                current_header=record.id
+                line=str(record.seq)
+                iter_needed=math.ceil((len(line)-length)/int(step_size))
+
+            ## initialize set of masked bases for this chromosome
+                start=0  ## used only if masking regions
+                masked_set=set()
+                for i in range(start,length): 
+                    if i in masked_dict_sets[current_header]: 
+                        masked_set.add(i) ## add index to masked set if in masked_dict_sets (preprocessing)
+
+            ## begin processing tiles
+                for iterations in range(iter_needed):
+                    tile=line[:length] ## get tile of given length
+                    if convert_n or check_reverse_complement:
+                        [rev_comp_tile,rc_conv_n]=reverse_complement(tile, convert_n)
+                        if convert_n:
+                            tile=rc_conv_n
+                    if check_reverse_complement and rev_comp_tile in tiling_set:
+                        pass
+                    elif tile in tiling_set: ## check if already in set
+                        pass
+                    else: ## check if the len of the set is above cutoff, if not add tile, if caring about reverse complement add rev to dict with key(tile) --> value(rev_compl)
+                        if len(masked_set) < ((masked_cutoff/100)*length):
+                            tiling_set.add(tile)
+                            if check_reverse_complement:
+                                tiling_set_reverse_complements[tile]=rev_comp_tile
+                        remove_from_set(masked_set, start, step_size, length, masked_dict_sets[current_header])
+                        start+=step_size
+                    line=line[step_size:]
+    return [tiling_set,tiling_set_reverse_complements]
 
 
 ## main function to create probe set
 def tiling(input_fastas, length, step_size, check_reverse_complement=False, convert_n=True):
-    """tiling, """
+    """tiling, just base genome, no masking checking"""
     tiling_set=set()
     new_uniq_tiles_per_ref={}
     for current_input in input_fastas:
         # iterate over each input file (fasta without linebreaks)
-        with open(current_input, newline="\n") as f:
-            for line in f:
-                if line.startswith(">"): 
-                    ## start of new accession in fasta
-                    current_header=str(line)[:-1]
-                    new_uniq_tiles_per_ref[current_header] = 0
-                else:
-                    line=line[:-1]
-                    iter_needed=math.ceil(len(line)/int(step_size))
-                    for iterations in range(iter_needed):
-                        tile=line[:length] ## get tile of given length
-                        if convert_n or check_reverse_complement:
-                            rc_conv_n=reverse_complement(tile, convert_n)
-                            if convert_n:
-                                tile=rc_conv_n[1]
-                        if check_reverse_complement and rc_conv_n[0] in tiling_set:
-                            pass
-                        elif tile in tiling_set: ## check if already in set
-                            pass
-                        else:
-                            if len(tile) == length: ## 
-                                tiling_set.add(tile)
-                                new_uniq_tiles_per_ref[current_header]+=1
-                        line=line[step_size:]
+         with open(current_input) as f:
+            for record in SeqIO.parse(f, "fasta"):
+            ## get section of fasta ready for tiling
+                current_header=record.id
+                line=str(record.seq)
+                iter_needed=math.ceil((len(line)-length)/int(step_size))
+            ## begin processing tiles
+                for iterations in range(iter_needed):
+                    tile=line[:length] ## get tile of given length
+                    if convert_n or check_reverse_complement:
+                        rc_conv_n=reverse_complement(tile, convert_n)
+                        if convert_n:
+                            tile=rc_conv_n[1]
+                    if check_reverse_complement and rc_conv_n[0] in tiling_set:
+                        pass
+                    elif tile in tiling_set: ## check if already in set
+                        pass
+                    else:
+                        if len(tile) == length: ## 
+                            tiling_set.add(tile)
+                            new_uniq_tiles_per_ref[current_header]+=1
+                    line=line[step_size:]
     return tiling_set
 
-def write_fasta(tiling_set,filename="probe_set.fasta"):
+def write_fasta(tiling_set,filename="probe_set.fasta", reverse_complement=False):
+    """
+    output in fasta format with accession headers being a growing index, if reverse_complement==True, will output forward probes first, then the corresponding reverse complements with the same index+_rev_complement
+    useful for cd-hit clustering to remove any probe with reverse complement getting into clusters
+    """
     if '.fasta' not in filename:
         filename+='.fasta'
     index=0
-    with open(filename, "w") as file_out:
-        for line in list(tiling_set):
-            file_out.write(">"+str(index)+"\n")
-            file_out.write(line+"\n")
-            index+=1
+    if reverse_complement:
+        with open(filename, "w") as file_out:
+            probes=list(tiling_set[1].keys())
+            for line in probes:
+                file_out.write(">"+str(index)+"\n")
+                file_out.write(line+"\n")
+                index+=1
+            index=0
+            for line in probes:
+                file_out.write(">"+str(index)+"_rev_complement"+"\n")
+                file_out.write(tiling_set[1][line]+"\n")
+                index+=1
+    else:
+        with open(filename, "w") as file_out:
+            for line in list(tiling_set[0]):
+                file_out.write(">"+str(index)+"\n")
+                file_out.write(line+"\n")
+                index+=1
 
-def write_text(tiling_set,filename="probe_set.txt"):
+def write_text(tiling_set,filename="probe_set.txt",reverse_complement=False):
+    """output tiles as a single probe per line file"""
     if '.txt' not in filename:
             filename+='.txt'
+    if reverse_complement:
+        probes=list(tiling_set[1].keys)+list(tiling_set[1].values)
+    else: probes=list(tiling_set[0])
     with open(filename, "w") as file_out:
-        file_out.write('\n'.join(list(tiling_set)))
+        file_out.write('\n'.join(probes))
 
-def write_output(tiling_set,filename="probe_set.txt", outfmt="txt"):
+def write_output(tiling_set,filename="probe_set.txt", outfmt="txt",reverse_complement=False):
+    """sends tiling set (either just base tiling set or set with reverse complement (dict)) to output writing functions"""
     if outfmt=="txt":
-        write_text(tiling_set,filename)
+        write_text(tiling_set,filename,reverse_complement)
     elif outfmt=="fasta":
-        write_fasta(tiling_set,filename)
+        write_fasta(tiling_set,filename,reverse_complement)
     elif outfmt=="all":
-        write_text(tiling_set,filename)
-        write_fasta(tiling_set,filename)
+        write_text(tiling_set,filename,reverse_complement)
+        write_fasta(tiling_set,filename,reverse_complement)
         
 
 if __name__ == '__main__':
     if args.masked_regions:
+        print("tiling masked")
         masked_regions=parse_masked(args.masked_regions[0])
-        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt)
+        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt,args.reverse_complement)
     else:
         write_output(tiling(args.input, length, step_size, args.reverse_complement, args.convert_n),args.out_name[0], outfmt)
