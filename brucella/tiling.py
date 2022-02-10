@@ -126,7 +126,6 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
 def tiling(input_fastas, length, step_size, check_reverse_complement=False, convert_n=True):
     """tiling, just base genome, no masking checking"""
     tiling_set=set()
-    new_uniq_tiles_per_ref={}
     for current_input in input_fastas:
         # iterate over each input file (fasta without linebreaks)
          with open(current_input) as f:
@@ -149,7 +148,6 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, conv
                     else:
                         if len(tile) == length: ## 
                             tiling_set.add(tile)
-                            new_uniq_tiles_per_ref[current_header]+=1
                     line=line[step_size:]
     return tiling_set
 
