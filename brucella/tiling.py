@@ -151,7 +151,7 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, conv
                     line=line[step_size:]
     return tiling_set
 
-def write_fasta(tiling_set,filename="probe_set.fasta", reverse_complement=False):
+def write_fasta(tiling_set,filename="probe_set.fasta", reverse_complement=False, tuple=False):
     """
     output in fasta format with accession headers being a growing index, if reverse_complement==True, will output forward probes first, then the corresponding reverse complements with the same index+_rev_complement
     useful for cd-hit clustering to remove any probe with reverse complement getting into clusters
@@ -172,37 +172,48 @@ def write_fasta(tiling_set,filename="probe_set.fasta", reverse_complement=False)
                 file_out.write(tiling_set[1][line]+"\n")
                 index+=1
     else:
-        with open(filename, "w") as file_out:
-            for line in list(tiling_set[0]):
-                file_out.write(">"+str(index)+"\n")
-                file_out.write(line+"\n")
-                index+=1
+        if tuple:
+            with open(filename, "w") as file_out:
+                for line in list(tiling_set[0]):
+                    file_out.write(">"+str(index)+"\n")
+                    file_out.write(line+"\n")
+                    index+=1
+        else:
+            probes=tiling_set
+            with open(filename, "w") as file_out:
+                for line in probes:
+                    file_out.write(">"+str(index)+"\n")
+                    file_out.write(line+"\n")
+                    index+=1
 
-def write_text(tiling_set,filename="probe_set.txt",reverse_complement=False):
+
+def write_text(tiling_set,filename="probe_set.txt",reverse_complement=False, tuple=False):
     """output tiles as a single probe per line file"""
     if '.txt' not in filename:
             filename+='.txt'
-    if reverse_complement:
-        probes=list(tiling_set[1].keys)+list(tiling_set[1].values)
-    else: probes=list(tiling_set[0])
+    if tuple:
+        if reverse_complement:
+            probes=list(tiling_set[1].keys)+list(tiling_set[1].values)
+        else: probes=list(tiling_set[0])
+    else: probes=tiling_set
     with open(filename, "w") as file_out:
         file_out.write('\n'.join(probes))
 
-def write_output(tiling_set,filename="probe_set.txt", outfmt="txt",reverse_complement=False):
+def write_output(tiling_set,filename="probe_set.txt", outfmt="txt",reverse_complement=False, tuple=False):
     """sends tiling set (either just base tiling set or set with reverse complement (dict)) to output writing functions"""
     if outfmt=="txt":
-        write_text(tiling_set,filename,reverse_complement)
+        write_text(tiling_set,filename,reverse_complement,tuple)
     elif outfmt=="fasta":
-        write_fasta(tiling_set,filename,reverse_complement)
+        write_fasta(tiling_set,filename,reverse_complement,tuple)
     elif outfmt=="all":
-        write_text(tiling_set,filename,reverse_complement)
-        write_fasta(tiling_set,filename,reverse_complement)
+        write_text(tiling_set,filename,reverse_complement,tuple)
+        write_fasta(tiling_set,filename,reverse_complement,tuple)
         
 
 if __name__ == '__main__':
     if args.masked_regions:
         print("tiling masked")
         masked_regions=parse_masked(args.masked_regions[0])
-        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt,args.reverse_complement)
+        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt,args.reverse_complement, tuple=True)
     else:
-        write_output(tiling(args.input, length, step_size, args.reverse_complement, args.convert_n),args.out_name[0], outfmt)
+        write_output(tiling(args.input, length, step_size, args.reverse_complement, args.convert_n),args.out_name[0], outfmt, tuple=False)
