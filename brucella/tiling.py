@@ -35,16 +35,14 @@ def parse_masked(masked_input):
     with open(masked_input, newline="\n") as f:
         for line in f:
             (key,start,end)=line.split('\t')
-            key=key.split(' ')[0][1:] ## format to match seqIO record.id
+            key=key.split(' ')[0][1:] ## format to match seqIO record.id, just accession without >
             start=int(start)
             end=int(end)
             if key in masked_dict_sets:
-                for i in range(start, end+1):
-                    masked_dict_sets[key].add(i)
+                to_union=set(range(start, end+1))
+                masked_dict_sets[key].union(to_union)
             else:
-                masked_dict_sets[key] = set()
-                for i in range(start, end+1):
-                    masked_dict_sets[key].add(i)
+                masked_dict_sets[key] = set(range(start, end+1))
     return masked_dict_sets
 
 def parse_probes(prior_probes):
@@ -269,7 +267,7 @@ def main(args):
         write_output(
             tiling_masked(args.input, length, step_size,\
             masked_cutoff_parsed, masked_regions_parsed,\
-            args.reverse_complement, args.output_reverse_complement, args.convert_n, add_probes),\
+            args.reverse_complement, args.output_reverse_complement, convert_n, add_probes),\
         args.out_name[0], outfmt_parsed, args.output_reverse_complement)
 
 if __name__ == '__main__':
