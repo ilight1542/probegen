@@ -239,7 +239,7 @@ def main(args):
         print("No option passed to output format (--outfmt), using default output of txt")
         outfmt="txt"
     ## rand seed
-    if args.randseed[0]:
+    if args.randseed:
         random.seed=(args.randseed[0])
     else: 
         print("No option passed to random seed (--randseed), using default value of 100")
