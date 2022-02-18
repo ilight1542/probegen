@@ -245,7 +245,7 @@ def main(args):
         print("No option passed to random seed (--randseed), using default value of 100")
         random.seed=(100)
     
-    if args.add_probes is None:
+    if args.add_to_existing is None:
         add_probes=None
     else:
         add_probes=parse_probes(args.add_probes[0])
