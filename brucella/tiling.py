@@ -240,10 +240,10 @@ def main(args):
         outfmt="txt"
     ## rand seed
     if args.randseed:
-        random.seed=(args.randseed[0])
+        random.seed(args.randseed[0])
     else: 
         print("No option passed to random seed (--randseed), using default value of 100")
-        random.seed=(100)
+        random.seed(100)
     
     if args.add_to_existing is None:
         add_probes=None
