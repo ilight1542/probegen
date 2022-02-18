@@ -248,7 +248,7 @@ def main(args):
     if args.add_to_existing is None:
         add_probes=None
     else:
-        add_probes=parse_probes(args.add_probes[0])
+        add_probes=parse_probes(args.add_to_existing[0])
 
     #######################
     ## execute functions ##
