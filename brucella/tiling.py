@@ -251,7 +251,6 @@ def main(args):
     #######################
     ## execute functions ##
     #######################
-
     if args.masked_regions is None:
         write_output(
             tiling(args.input, length, step_size,\
@@ -272,13 +271,4 @@ def main(args):
 
 if __name__ == '__main__':
     main(args)
-
-    """if args.masked_regions:
-        print("tiling masked")
-        masked_regions=parse_masked(args.masked_regions[0])
-        write_output(tiling_masked(args.input, length, step_size, int(args.masked_cutoff[0]), masked_regions, args.reverse_complement, args.convert_n), args.out_name[0], outfmt_parsed,args.reverse_complement, output_reverse_complement=True)
-    else:
-        write_output(tiling(args.input, length, step_size, args.reverse_complement, args.convert_n),args.out_name[0], outfmt, output_reverse_complement=False)
-        
-    """
     
