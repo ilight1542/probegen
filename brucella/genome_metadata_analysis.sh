@@ -12,6 +12,7 @@ done <brucella_species.txt
 
 egrep "Complete|Chromosome" brucella_genomes_metadata.tsv > brucella_genomes_metadata_chorm_compl.tsv
 
+## removing any doubled records (eg from both refseq and genbank)
 touch brucella_genomes_metadata_chorm_compl.tsv.filtered
 for i in $(seq 1 $(wc -l < brucella_genomes_metadata_chorm_compl.tsv))
     do
