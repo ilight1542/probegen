@@ -15,7 +15,7 @@ parser.add_argument('--masked_regions', metavar="dustmasker output acclist",\
     required = False, nargs=1, help="fasta header --> low complexity regions, single file")
 parser.add_argument('--masked_cutoff', metavar="masked probe percentage",\
     required = False, nargs=1, help="percentage of probe that can be masked before discarding (eg 10 == up to 10 percent of read can be masked), default =10")
-parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering)")
+parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering, functionality contained within cd-hit)")
 parser.add_argument('--output_reverse_complement', action='store_true',help="output both probe and a probe's reverse complement to fasta or text file (default = output only probe)")
 parser.add_argument('--outfmt', metavar="txt, fasta, all", help="output format, .txt or .fasta, default =txt")
 parser.add_argument('--no_convert_n', action='store_true', help="do not convert N to random base for probe set")
