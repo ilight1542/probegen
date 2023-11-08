@@ -23,5 +23,5 @@ def main(input_fasta_paths_file):
     else: sys.exit(0)
 
 if __name__ == '__main__':
-    main(args.input)
+    main(args.input[0])
 
