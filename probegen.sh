@@ -115,9 +115,17 @@ while getopts ":I:ObMlsrCitmavh" options; do         # Loop: Get the next option
   esac
 done
 
-if ( ${help} ); then help && exit 0; fi
+## validation ##
 
-if ( ${version} ); then echo $prog_version && exit 0; fi
+if [[ $version == true ]]; then
+  printf $prog_version
+  exit 0
+fi
+
+if [[ $OPTIND -eq 1 ]]; then echo "No options were passed!" && exit_abnormal; fi
+shift $((OPTIND-1))
+
+if [[ $help == true ]]; then help && exit 0; fi
 
 
 # BEGIN SCRIPT 
