@@ -12,7 +12,7 @@ def main(input_fasta_paths_file):
     not_found_fasta=[]
     with open(input_fasta_paths_file) as f:
         for path in f:
-            path.strip()
+            path=path.strip()
             if not os.path.isfile(f'{path}'):
                 not_found_fasta.append(f'{path}')
     if len(not_found_fasta) > 0:
