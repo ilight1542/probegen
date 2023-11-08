@@ -129,14 +129,13 @@ if [[ $help == true ]]; then help && exit 0; fi
 
 
 # BEGIN SCRIPT 
-if ( ! genomepathsfile ) ; then
+if [[ ! ${genomepathsfile} ]] ; then
     printf "Predownloaded genome paths file must be given! Please supply a text file with a path to each reference genome"
     exit 1
 fi
 
 # Check all file paths
-python3 pipeline_checker.py -i ${genomepathsfile}
-if ! python python3 pipeline_checker.py -i ${genomepathsfile} ; then
+if ! python3 pipeline_checker.py -i ${genomepathsfile} ; then
     exit 1
 fi
 
