@@ -2,9 +2,10 @@ import argparse
 import math
 import random
 from Bio import SeqIO
+import gzip
 
 parser = argparse.ArgumentParser(description='tile a set of genomes for capture probe. mandatory fields, -i, -l, -s')
-parser.add_argument('-i', '--input', metavar='input genomes', \
+parser.add_argument('-i', '--input', metavar='input genomes text file (line sep)', \
     required=True, nargs='+', help="input genomes to be made into probe")
 parser.add_argument('-l', '--length', metavar="length of probe",\
     required=True, nargs=1, help="length of probe (before any addition of adapters")
@@ -15,7 +16,7 @@ parser.add_argument('--masked_regions', metavar="dustmasker output acclist",\
     required = False, nargs=1, help="fasta header --> low complexity regions, single file")
 parser.add_argument('--masked_cutoff', metavar="masked probe percentage",\
     required = False, nargs=1, help="percentage of probe that can be masked before discarding (eg 10 == up to 10 percent of read can be masked), default =10")
-parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering, functionality contained within cd-hit)")
+parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering done, functionality contained within cd-hit)")
 parser.add_argument('--output_reverse_complement', action='store_true',help="output both probe and a probe's reverse complement to fasta or text file (default = output only probe)")
 parser.add_argument('--outfmt', metavar="txt, fasta, all", help="output format, .txt or .fasta, default =txt")
 parser.add_argument('--no_convert_n', action='store_true', help="do not convert N to random base for probe set")
@@ -26,7 +27,7 @@ args=parser.parse_args()
 
 ## required argumets
 ## sliding window approach with set corresponding to masked regions
-## eg set(10,11,12,..,16) for window 10..70 has 6 masked reads
+## eg set(10,11,12,..,16) for window 10..70 has 7 masked basepairs
 ## then just set.remove(10) if 10 in set and add 71 if 71 in masked set
 
 ## functions for parsing optional arguments
@@ -95,8 +96,10 @@ def tiling_masked(input_fastas, length, step_size, masked_cutoff, masked_dict_se
         tiling_set=add_probes
     #reverse complement checking not necessary if using cd-hit, reverse complement removal done by cd-hit-est
     tiling_set_reverse_complements={}
-    for current_input in input_fastas:
-        with open(current_input) as f:
+    with open(input_fastas) as fasta_f:
+        input_fasta_paths = [line.rstrip() for line in fasta_f]
+    for current_input in input_fasta_paths:
+        with gzip.open(current_input,'rt') as f:
             for record in SeqIO.parse(f, "fasta"):
             ## get section of fasta ready for tiling
                 current_header=record.id
@@ -141,9 +144,11 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, outp
     else:
         tiling_set=add_probes
     tiling_set_reverse_complements={}
-    for current_input in input_fastas:
+    with open(input_fastas) as fasta_f:
+        input_fasta_paths = [line.rstrip() for line in fasta_f]
+    for current_input in input_fasta_paths:
         # iterate over each input file (fasta without linebreaks)
-        with open(current_input) as f:
+        with gzip.open(current_input,'rt') as f:
             for record in SeqIO.parse(f, "fasta"):
             ## get section of fasta ready for tiling
                 current_header=record.id
