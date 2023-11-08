@@ -4,7 +4,7 @@ import os
 
 parser = argparse.ArgumentParser(description='Helper script for checking existance of all reference genomes. Fields, -i')
 parser.add_argument('-i', '--input', metavar='input genomes text file', \
-    required=True, nargs=1, help="Text file of input genome paths to be made into probe")
+    required=True, help="Text file of input genome paths to be made into probe")
 
 args=parser.parse_args()
 
@@ -23,5 +23,5 @@ def main(input_fasta_paths_file):
     else: sys.exit(0)
 
 if __name__ == '__main__':
-    main(args.input[0])
+    main(args.input)
 
