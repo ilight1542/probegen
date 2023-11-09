@@ -8,20 +8,20 @@ parser = argparse.ArgumentParser(description='tile a set of genomes for capture 
 parser.add_argument('-i', '--input', metavar='input genomes text file (line sep)', \
     required=True, nargs='+', help="input genomes to be made into probe")
 parser.add_argument('-l', '--length', metavar="length of probe",\
-    required=True, nargs=1, help="length of probe (before any addition of adapters")
+    required=True, help="length of probe (before any addition of adapters")
 parser.add_argument('-s', '--step_size', metavar="step size",\
-    required=True, nargs=1, help="number of bases between probes")
-parser.add_argument('--out_name', nargs=1, help="output file name")
+    required=True, help="number of bases between probes")
+parser.add_argument('--out_name', help="output file name")
 parser.add_argument('--masked_regions', metavar="dustmasker output acclist",\
-    required = False, nargs=1, help="fasta header --> low complexity regions, single file")
+    required = False, help="fasta header --> low complexity regions, single file")
 parser.add_argument('--masked_cutoff', metavar="masked probe percentage",\
-    required = False, nargs=1, help="percentage of probe that can be masked before discarding (eg 10 == up to 10 percent of read can be masked), default =10")
+    required = False, help="percentage of probe that can be masked before discarding (eg 10 == up to 10 percent of read can be masked), default =10")
 parser.add_argument('--reverse_complement', action='store_true', help="filter cross probe reverse complements (default = no filtering done, functionality contained within cd-hit)")
 parser.add_argument('--output_reverse_complement', action='store_true',help="output both probe and a probe's reverse complement to fasta or text file (default = output only probe)")
 parser.add_argument('--outfmt', metavar="txt, fasta, all", help="output format, .txt or .fasta, default =txt")
 parser.add_argument('--no_convert_n', action='store_true', help="do not convert N to random base for probe set")
-parser.add_argument('--randseed', nargs=1, help="random seed for consistent probe construction across multiple runs")
-parser.add_argument('--add_to_existing', nargs=1, help="probe set which we want to add new probes to from genomes marked at input, \
+parser.add_argument('--randseed', help="random seed for consistent probe construction across multiple runs")
+parser.add_argument('--add_to_existing', help="probe set which we want to add new probes to from genomes marked at input, \
     shoudld be in either fasta format with a header with probe name followed by the probe, or txt with a probe per line")
 args=parser.parse_args()
 
