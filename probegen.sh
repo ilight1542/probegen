@@ -13,7 +13,7 @@ runmasking=true
 # probe clustering options
 runclustering=true
 length="52"
-stepsize="0"
+stepsize="1"
 minimumpercentidentity="95"
 maxterminalmismatches="2"
 adapterseq=""
