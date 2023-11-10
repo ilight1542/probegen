@@ -164,7 +164,7 @@ def tiling(input_fastas, length, step_size, check_reverse_complement=False, outp
                     if check_reverse_complement and rev_comp_tile in tiling_set:
                         pass
                     else:
-                        if tile not in tiling_set and len(tile) == length: ## check if already in set
+                        if len(tile) == length: ## check if already in set
                             tiling_set.add(tile)
                         if output_reverse_complement:
                             tiling_set_reverse_complements[tile] = rev_comp_tile
@@ -226,8 +226,8 @@ def main(args):
     """executing function, will call other helper functions to create probe set and output"""
     ## parse arguments for input to varisou functions 
     ## mandatory arg parsing
-    length=int(args.length[0])
-    step_size=int(args.step_size[0])
+    length=int(args.length)
+    step_size=int(args.step_size)
 
     ## optional arg parsing that have defaults and are not automatically parsed 
     ## NOTE: this may be implementable in argparser at top, but I am lazy
@@ -240,10 +240,10 @@ def main(args):
         outfmt_parsed=args.outfmt
     else: 
         print("No option passed to output format (--outfmt), using default output of txt")
-        outfmt="txt"
+        outfmt_parsed="txt"
     ## rand seed
     if args.randseed:
-        random.seed(args.randseed[0])
+        random.seed(args.randseed)
     else: 
         print("No option passed to random seed (--randseed), using default value of 100")
         random.seed(100)
@@ -251,7 +251,7 @@ def main(args):
     if args.add_to_existing is None:
         add_probes=None
     else:
-        add_probes=parse_probes(args.add_to_existing[0])
+        add_probes=parse_probes(args.add_to_existing)
 
     #######################
     ## execute functions ##
@@ -260,19 +260,19 @@ def main(args):
         write_output(
             tiling(args.input, length, step_size,\
             args.reverse_complement, args.output_reverse_complement, convert_n, add_probes),\
-        args.out_name[0], outfmt_parsed, args.output_reverse_complement)
+        args.out_name, outfmt_parsed, args.output_reverse_complement)
     else:
-        masked_regions_parsed=parse_masked(args.masked_regions[0])
+        masked_regions_parsed=parse_masked(args.masked_regions)
         ## check masked_cutoff set, if not use default of 10%
         if args.masked_cutoff is None:
             masked_cutoff_parsed = 10
             print("No option passed to masked cutoff (--masked_cutoff), using default value of 10%")
-        else: masked_cutoff_parsed = int(args.masked_cutoff[0])
+        else: masked_cutoff_parsed = int(args.masked_cutoff)
         write_output(
             tiling_masked(args.input, length, step_size,\
             masked_cutoff_parsed, masked_regions_parsed,\
             args.reverse_complement, args.output_reverse_complement, convert_n, add_probes),\
-        args.out_name[0], outfmt_parsed, args.output_reverse_complement)
+        args.out_name, outfmt_parsed, args.output_reverse_complement)
 
 if __name__ == '__main__':
     main(args)

@@ -17,6 +17,8 @@ stepsize="0"
 minimumpercentidentity="95"
 maxterminalmismatches="2"
 adapterseq=""
+randseed="100"
+
 
 ## functions
 
