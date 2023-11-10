@@ -6,7 +6,7 @@ import gzip
 
 parser = argparse.ArgumentParser(description='tile a set of genomes for capture probe. mandatory fields, -i, -l, -s')
 parser.add_argument('-i', '--input', metavar='input genomes text file (line sep)', \
-    required=True, nargs='+', help="input genomes to be made into probe")
+    required=True, help="input genomes text file to be made into probe")
 parser.add_argument('-l', '--length', metavar="length of probe",\
     required=True, help="length of probe (before any addition of adapters")
 parser.add_argument('-s', '--step_size', metavar="step size",\
