@@ -18,7 +18,7 @@ minimumpercentidentity="95"
 maxterminalmismatches="2"
 adapterseq=""
 randseed="100"
-
+maskedthreshold="10"
 
 ## functions
 

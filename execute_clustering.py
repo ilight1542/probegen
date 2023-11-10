@@ -29,5 +29,5 @@ def main(input_fasta, output_fasta, length, percent_identity_aligned_portion, ma
     subprocess.run([ f"cd-hit-est -i {input_fasta} -r 1 -G 0 -o {output_fasta} -n 9 -A {min_overlap} -d 0 -c {minimumpercentidentity} -p 1"  ],shell=True)
 
 if __name__ == '__main__':
-    main(args.fasta, args.output, args.length, percent_identity_aligned_portion,max_terminal_mismatches)
+    main(args.fasta, args.output, length, percent_identity_aligned_portion,max_terminal_mismatches)
 
