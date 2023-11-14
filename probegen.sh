@@ -137,11 +137,15 @@ if [[ ! ${genomepathsfile} ]] ; then
 fi
 
 # Check all file paths
+date=$(date)
+echo "PROBEGEN - ${date}: Running pipeline checker"
 if ! python3 pipeline_checker.py -i ${genomepathsfile} ; then
     exit 1
 fi
 
 ### Removing genomes with rates of ambiguous bases that are too high
+date=$(date)
+echo "PROBEGEN - ${date}: Removing fastas with ambiguous bases above ${percentambiguousbasethreshold} percent"
 cat ${genomepathsfile} | while read fasta_path; do
 total_bases=$(zcat ${fasta_path} | grep -E "^[^>]" | tr -d \\n | wc -c)
 ambiguous_bases_observed=$(zcat ${fasta_path} | grep -E "^[^>]" | grep -E "[^ATCG]" -o | wc -l)
@@ -152,13 +156,19 @@ fi
 done
 
 #### formatting and running dustmasker, and tiling the genomes into probes
+date=$(date)
+echo "PROBEGEN - ${date}: Generating probe set"
 if ( ${runmasking} ) ; then
+    date=$(date)
+    echo "     - ${date}: Running dustmasker"
     cat final_genomes.txt | while read fasta_path
         do
             ## dustmasker
             zcat ${fasta_path} | dustmasker -out temp.dusted.windows -window ${length} -outfmt acclist
             cat temp.dusted.windows >> dusted_genomes.fasta
     done
+    date=$(date)
+    echo "     - ${date}: Running clustering"
     if ( ${runclustering} ) ; then
         python3 tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --masked_regions dusted_genomes.fasta --masked_cutoff ${maskedthreshold}\
@@ -173,6 +183,8 @@ if ( ${runmasking} ) ; then
         file_to_add_apaters=tiling_out.txt
     fi
 else 
+    date=$(date)
+    echo "     - ${date}: Running clustering"
     if ( ${runclustering} ) ; then
         python3 tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --out_name tiling_out.txt
@@ -188,6 +200,9 @@ else
 fi 
 
 ## Add adapter sequence (if provided) and format
+date=$(date)
+echo "     - ${date}: Adding adapters and formatting"
+
 index=1
 for i in $(grep -E "[ATCG]" ${file_to_add_apaters})
     do
