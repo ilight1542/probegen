@@ -230,13 +230,13 @@ if ( ${runmasking} ) ; then
             fi
             cat temp.dusted.windows >> dusted_genomes.fasta
     done
-    date=$(date)
-    echo "     - ${date}: Running clustering"
     if ( ${runclustering} ) ; then
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --masked_regions dusted_genomes.fasta --masked_cutoff ${maskedthreshold}\
             --out_name ${tiling_output} --outfmt fasta
         file_to_add_apaters=$(echo ${tiling_output} | sed 's/\.fasta/_cd_hit\.fasta/g')
+        date=$(date)
+        echo "     - ${date}: Running clustering"
         python3 ${SCRIPT_DIR}/execute_clustering.py -f ${tiling_output} -o ${file_to_add_apaters} -l ${length} -i ${minimumpercentidentity} -t ${maxterminalmismatches}
     else
         # check if reverse complement is already present in growing probe set
@@ -246,12 +246,12 @@ if ( ${runmasking} ) ; then
         file_to_add_apaters=${tiling_output}
     fi
 else 
-    date=$(date)
-    echo "     - ${date}: Running clustering"
     if ( ${runclustering} ) ; then
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --out_name ${tiling_output} --outfmt fasta
         file_to_add_apaters=$(echo ${tiling_output} | sed 's/\.fasta/_cd_hit\.fasta/g')
+        date=$(date)
+        echo "     - ${date}: Running clustering"
         python3 ${SCRIPT_DIR}/execute_clustering.py -f ${tiling_output} -o ${file_to_add_apaters} -l ${length} -i ${minimumpercentidentity} -t ${maxterminalmismatches}
     else
             # check if reverse complement is already present in growing probe set
