@@ -5,6 +5,7 @@ script_name=$(basename $0)
 prog_version=0.1.0
 
 # threshold ambiguous bases for genome to be excluded
+runfiltering=true
 percentambiguousbasethreshold="1"
 
 # dustmasking options
@@ -29,13 +30,14 @@ usage() {
     echo "  -I, --genome-paths-file <file>                   Set the genome paths file (mandatory)"
     echo "  -O, --output <file>                              Set the output file (mandatory)"
     echo "Options:"
+    echo "  -F, --disable-genome-qual-filtering              Disable removing genomes with given proportion of ambigious bases (default: filtering run)"
     echo "  -b, --percent-ambiguous-base-threshold <value>   Set the percent ambiguous base threshold for genome inclusion (default: 1)"
-    echo "  -M, --run-masking                                Enable masking (default: true)"
+    echo "  -M, --disable-masking                            Disable masking (default: masking run)"
     echo "  -l, --length <value>                             Set the length for probes (default: 52)"
     echo "  -s, --step-size <value>                          Set the step size for probes (default: 1)"
     echo "  -m, --masked-threshold <value>                   Set the masked threshold for probe inclusion (default: 10)"
     echo "  -r, --randseed <value>                           Set the random seed for probe generation (default: 100)"
-    echo "  -C, --run-clustering                             Enable clustering (default: true)"
+    echo "  -C, --disable-clustering                         Disable clustering (default: clustering run)"
     echo "  -i, --minimum-percent-identity <value>           Set the minimum percent identity for clustering (default: 95)"
     echo "  -t, --max-terminal-mismatches <value>            Set the max terminal mismatches for clustering (default: 2)"
     echo "  -a, --adapter-seq <seq>                          Set the adapter sequence for appending to probes (default: none)"
@@ -57,13 +59,17 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        -F|--disable-genome-qual-filtering)
+            runfiltering=false
+            shift
+            ;;
         -b|--percent-ambiguous-base-threshold)
             percentambiguousbasethreshold="$2"
             shift
             shift
             ;;
-        -M|--run-masking)
-            runmasking=true
+        -M|--disable-masking)
+            runmasking=false
             shift
             ;;
         -l|--length)
@@ -86,8 +92,8 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
-        -C|--run-clustering)
-            runclustering=true
+        -C|--disable-clustering)
+            runclustering=false
             shift
             ;;
         -i|--minimum-percent-identity)
@@ -121,7 +127,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 help() { # print help, explanation for all parameters
-    printf "
+    printf  "
     $(basename ${script_name^^})
     $script_name - Generate unique probes from reference genomes
 
@@ -140,10 +146,12 @@ help() { # print help, explanation for all parameters
             --output - Output name for completed probe set
 
         Optional:
+        -F
+            --disable-genome-qual-filtering - Turn off filtering genomes which have too many ambiguous basecalls (set by --percent-ambiguous-base-threshold) Default: filtering enabled
         -b
             --percent-ambiguous-base-threshold. Default=1
         -M
-            --run-dustmasker - Turn on dustmasker of low-complexity regions. Default=true
+            --disable-dustmasker - Turn off dustmasker of low-complexity regions. Default=Dustmasker masking enabled
         -l
             --length - Length of probes to generate (without adapter). Default=52
         -s
@@ -153,13 +161,13 @@ help() { # print help, explanation for all parameters
         -r
             --randseed - Seed for random pick of replacement of non-ATCG bases in probe. Default=100
         -C
-            --run-clustering - Run clustering of similar probes using cd-hit-est. Default=true
+            --disable-clustering - Turn off clustering of similar probes using cd-hit-est. Default=Clustering enabled
         -i
             --minimum-percent-identity - Minimum percent identity on aligned region for cd-hit-est to cluster a probe with a representative. Default=95
         -t
             --max-terminal-mismatches - Maximum number of terminal mismatches (leading or tail) for cd-hit-est to consider an alignment. Default=2
         -a
-            --adapter-seq - Adaptersequence to be appended to all probes. No default.
+            --adapter-seq - Adapter sequence to be appended to all probes.
         -h     
             --help - Print this help message
         -v      
@@ -193,16 +201,18 @@ if ! python3 ${SCRIPT_DIR}/pipeline_checker.py -i ${genomepathsfile} --stepsize 
 fi
 
 ### Removing genomes with rates of ambiguous bases that are too high
-date=$(date)
-echo "PROBEGEN - ${date}: Removing fastas with ambiguous bases above ${percentambiguousbasethreshold} percent"
-cat ${genomepathsfile} | while read fasta_path; do
-total_bases=$(zcat ${fasta_path} | grep -E "^[^>]" | tr -d \\n | wc -c)
-ambiguous_bases_observed=$(zcat ${fasta_path} | grep -E "^[^>]" | grep -E "[^ATCG]" -o | wc -l)
-max_ambiguous_bases=$( echo "${total_bases}*${percentambiguousbasethreshold}/100" | bc )
-if (( $ambiguous_bases_observed < $max_ambiguous_bases )); then ## put genome into final set of genomes text (for reference) and move genome to subdirectory
-    echo ${fasta_path} >> final_genomes.txt
+if ( ${runfiltering} ); then
+    date=$(date)
+    echo "PROBEGEN - ${date}: Removing fastas with ambiguous bases above ${percentambiguousbasethreshold} percent"
+    cat ${genomepathsfile} | while read fasta_path; do
+        total_bases=$(zcat ${fasta_path} | grep -E "^[^>]" | tr -d \\n | wc -c)
+        ambiguous_bases_observed=$(zcat ${fasta_path} | grep -E "^[^>]" | grep -E "[^ATCG]" -o | wc -l)
+        max_ambiguous_bases=$( echo "${total_bases}*${percentambiguousbasethreshold}/100" | bc )
+        if (( $ambiguous_bases_observed < $max_ambiguous_bases )); then ## put genome into final set of genomes text (for reference) and move genome to subdirectory
+            echo ${fasta_path} >> final_genomes.txt
+        fi
+    done
 fi
-done
 
 #### formatting and running dustmasker, and tiling the genomes into probes
 date=$(date)
