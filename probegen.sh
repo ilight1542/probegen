@@ -215,12 +215,10 @@ if ( ${runfiltering} ); then
 fi
 
 #### formatting and running dustmasker, and tiling the genomes into probes
-date=$(date)
-echo "PROBEGEN - ${date}: Generating probe set"
 tiling_output=tiling_out.fasta
 if ( ${runmasking} ) ; then
     date=$(date)
-    echo "     - ${date}: Running dustmasker"
+    echo "PROBEGEN - ${date}: Running dustmasker"
     cat final_genomes.txt | while read fasta_path
         do
             ## dustmasker
@@ -231,6 +229,8 @@ if ( ${runmasking} ) ; then
             cat temp.dusted.windows >> dusted_genomes.fasta
     done
     if ( ${runclustering} ) ; then
+        date=$(date)
+        echo "PROBEGEN - ${date}: Generating probe set"
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --masked_regions dusted_genomes.fasta --masked_cutoff ${maskedthreshold}\
             --out_name ${tiling_output} --outfmt fasta
@@ -240,6 +240,8 @@ if ( ${runmasking} ) ; then
         python3 ${SCRIPT_DIR}/execute_clustering.py -f ${tiling_output} -o ${file_to_add_apaters} -l ${length} -i ${minimumpercentidentity} -t ${maxterminalmismatches}
     else
         # check if reverse complement is already present in growing probe set
+        date=$(date)
+        echo "PROBEGEN - ${date}: Generating probe set"
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --masked_regions dusted_genomes.fasta --masked_cutoff ${maskedthreshold}\
             --reverse_complement --out_name ${tiling_output} --outfmt fasta
@@ -247,6 +249,8 @@ if ( ${runmasking} ) ; then
     fi
 else 
     if ( ${runclustering} ) ; then
+        date=$(date)
+        echo "PROBEGEN - ${date}: Generating probe set"
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --out_name ${tiling_output} --outfmt fasta
         file_to_add_apaters=$(echo ${tiling_output} | sed 's/\.fasta/_cd_hit\.fasta/g')
@@ -254,7 +258,9 @@ else
         echo "     - ${date}: Running clustering"
         python3 ${SCRIPT_DIR}/execute_clustering.py -f ${tiling_output} -o ${file_to_add_apaters} -l ${length} -i ${minimumpercentidentity} -t ${maxterminalmismatches}
     else
-            # check if reverse complement is already present in growing probe set
+        # check if reverse complement is already present in growing probe set
+        date=$(date)
+        echo "PROBEGEN - ${date}: Generating probe set"
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --out_name ${tiling_output} --outfmt fasta
         file_to_add_apaters=${tiling_output}
