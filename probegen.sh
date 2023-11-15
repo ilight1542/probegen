@@ -9,7 +9,7 @@ runfiltering=true
 percentambiguousbasethreshold="1"
 
 # dustmasking options
-runmasking=true
+rundustmasker=true
 
 # probe clustering options
 runclustering=true
@@ -32,7 +32,7 @@ usage() {
     echo "Options:"
     echo "  -F, --disable-genome-qual-filtering              Disable removing genomes with given proportion of ambigious bases (default: filtering run)"
     echo "  -b, --percent-ambiguous-base-threshold <value>   Set the percent ambiguous base threshold for genome inclusion (default: 1)"
-    echo "  -M, --disable-masking                            Disable masking (default: masking run)"
+    echo "  -M, --disable-dustmasker                            Disable dustmasker (default: dustmasker run)"
     echo "  -l, --length <value>                             Set the length for probes (default: 52)"
     echo "  -s, --step-size <value>                          Set the step size for probes (default: 1)"
     echo "  -m, --masked-threshold <value>                   Set the masked threshold for probe inclusion (default: 10)"
@@ -68,8 +68,8 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
-        -M|--disable-masking)
-            runmasking=false
+        -D|--disable-dustmasker)
+            rundustmasker=false
             shift
             ;;
         -l|--length)
@@ -150,7 +150,7 @@ help() { # print help, explanation for all parameters
             --disable-genome-qual-filtering - Turn off filtering genomes which have too many ambiguous basecalls (set by --percent-ambiguous-base-threshold) Default: filtering enabled
         -b
             --percent-ambiguous-base-threshold. Default=1
-        -M
+        -D
             --disable-dustmasker - Turn off dustmasker of low-complexity regions. Default=Dustmasker masking enabled
         -l
             --length - Length of probes to generate (without adapter). Default=52
@@ -216,7 +216,7 @@ fi
 
 #### formatting and running dustmasker, and tiling the genomes into probes
 tiling_output=tiling_out.fasta
-if ( ${runmasking} ) ; then
+if ( ${rundustmasker} ) ; then
     date=$(date)
     echo "PROBEGEN - ${date}: Running dustmasker"
     cat final_genomes.txt | while read fasta_path
