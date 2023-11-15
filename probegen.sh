@@ -263,6 +263,8 @@ if [[ ! -z "${adapterseq}" ]]; then
         echo ">${output}_probe_${index}    ${i}${adapterseq}" >> ${output}
         index=$(( index + 1 ))
     done
+else
+    cp ${tiling_output} ${output}
 fi
 
 ## Done!
