@@ -227,14 +227,14 @@ if ( ${runmasking} ) ; then
     if ( ${runclustering} ) ; then
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --masked_regions dusted_genomes.fasta --masked_cutoff ${maskedthreshold}\
-            --out_name tiling_out.txt
+            --out_name tiling_out.fasta --outfmt fasta
         file_to_add_apaters=${output}_cdhit.fasta
         python3 ${SCRIPT_DIR}/execute_clustering.py -f tiling_out.txt -o ${output}_cdhit.fasta -l ${length} -i ${minimumpercentidentity} -t ${maxterminalmismatches}
     else
         # check if reverse complement is already present in growing probe set
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
             --masked_regions dusted_genomes.fasta --masked_cutoff ${maskedthreshold}\
-            --reverse_complement --out_name tiling_out.txt
+            --reverse_complement --out_name tiling_out.fasta --outfmt fasta
         file_to_add_apaters=tiling_out.txt
     fi
 else 
@@ -242,14 +242,14 @@ else
     echo "     - ${date}: Running clustering"
     if ( ${runclustering} ) ; then
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
-            --out_name tiling_out.txt
+            --out_name tiling_out.fasta --outfmt fasta
         file_to_add_apaters=${output}_cdhit.fasta
         python3 execute_clustering.py -f tiling_out.txt -o ${file_to_add_apaters} -l ${length} -i ${minimumpercentidentity} -t ${maxterminalmismatches}
     else
             # check if reverse complement is already present in growing probe set
         python3 ${SCRIPT_DIR}/tiling.py -i final_genomes.txt -l ${length} -s ${stepsize} --randseed ${randseed}\
-            --out_name tiling_out.txt
-        file_to_add_apaters=tiling_out.txt
+            --out_name tiling_out.fasta --outfmt fasta
+        file_to_add_apaters=tiling_out.fasta
     fi
         
 fi 
