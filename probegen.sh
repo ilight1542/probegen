@@ -120,12 +120,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if mandatory options are provided
-if [[ -z $genomepathsfile ]] || [[ -z $output ]]; then
-    echo "Error: Mandatory options -I and -O must be provided."
-    usage
-fi
-
 help() { # print help, explanation for all parameters
     printf "
     $(basename ${script_name^^})
@@ -195,7 +189,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 date=$(date)
 echo "PROBEGEN - ${date}: Running pipeline checker"
 if ! python3 ${SCRIPT_DIR}/pipeline_checker.py -i ${genomepathsfile} --stepsize ${stepsize} --length ${length} --maxterminalmismatches ${maxterminalmismatches} --maskedthreshold ${maskedthreshold} --minimumpercentidentity ${minimumpercentidentity} --percentambiguousbasethreshold ${percentambiguousbasethreshold}; then
-    exit 1
+    echo "ERROR - Pipeline_checker failed!" && exit 1
 fi
 
 ### Removing genomes with rates of ambiguous bases that are too high
@@ -221,6 +215,9 @@ if ( ${runmasking} ) ; then
         do
             ## dustmasker
             zcat ${fasta_path} | dustmasker -out temp.dusted.windows -window ${length} -outfmt acclist
+            if [ $? -eq 1 ]; then
+                echo "ERROR - Dustmasker failed!" && exit 1
+            fi
             cat temp.dusted.windows >> dusted_genomes.fasta
     done
     date=$(date)
@@ -256,15 +253,17 @@ else
 fi 
 
 ## Add adapter sequence (if provided) and format
-date=$(date)
-echo "     - ${date}: Adding adapters and formatting"
+if [[ ! -z "${adapterseq}" ]]; then
+    date=$(date)
+    echo "     - ${date}: Adding adapters and formatting"
 
-index=1
-for i in $(grep -E "[ATCG]" ${file_to_add_apaters})
-    do
-    echo ">${output}_probe_${index}    ${i}${adapterseq}" >> ${output}.fasta
-    index=$(( index + 1 ))
-done
+    index=1
+    for i in $(grep -E "[ATCG]" ${file_to_add_apaters})
+        do
+        echo ">${output}_probe_${index}    ${i}${adapterseq}" >> ${output}
+        index=$(( index + 1 ))
+    done
+fi
 
 ## Done!
 date=$(date)

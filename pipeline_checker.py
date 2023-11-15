@@ -59,7 +59,6 @@ def main(input_fasta_paths_file,stepsize,length,maxterminalmismatches,maskedthre
     paths_ok=check_fasta_paths(input_fasta_paths_file)
     try: check_step_size_bounds(stepsize)
     except ValueError as e:
-        print('error encountered')
         error_list.append(e)
     try: check_length_bounds(length)
     except ValueError as e:
