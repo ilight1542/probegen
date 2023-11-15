@@ -32,7 +32,7 @@ usage() {
     echo "Options:"
     echo "  -F, --disable-genome-qual-filtering              Disable removing genomes with given proportion of ambigious bases (default: filtering run)"
     echo "  -b, --percent-ambiguous-base-threshold <value>   Set the percent ambiguous base threshold for genome inclusion (default: 1)"
-    echo "  -M, --disable-dustmasker                            Disable dustmasker (default: dustmasker run)"
+    echo "  -D, --disable-dustmasker                            Disable dustmasker (default: dustmasker run)"
     echo "  -l, --length <value>                             Set the length for probes (default: 52)"
     echo "  -s, --step-size <value>                          Set the step size for probes (default: 1)"
     echo "  -m, --masked-threshold <value>                   Set the masked threshold for probe inclusion (default: 10)"
