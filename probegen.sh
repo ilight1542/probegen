@@ -141,7 +141,7 @@ help() { # print help, explanation for all parameters
     OPTIONS
         Mandatory:
         -I [file name]
-            --genomepathsfile - File cotaining a line separated list of reference genomes that should be considered to create the probeset. All files must be gzipped!
+            --genomepathsfile - File cotaining a line separated list of reference genomes that should be considered to create the probeset. All reference genome files must be gzipped!
         -O [file name]
             --output - Output name for completed probe set
 
@@ -277,7 +277,7 @@ fi
 ## Add adapter sequence (if provided) and format
 if [[ ! -z "${adapterseq}" ]]; then
     date=$(date)
-    echo "     - ${date}: Adding adapters and formatting"
+    echo "     - ${date}: Adding adapters and formatting tsv as: fasta header    probe"
 
     index=1
     for i in $(grep -E "[ATCG]" ${file_to_add_apaters})
