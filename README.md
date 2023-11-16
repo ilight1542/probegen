@@ -8,7 +8,7 @@ PROBEGEN - Generate unique probes from reference genomes by a sliding window app
 Downloadable from Zenodo or [github](https://github.com/ilight1542/probegen) 
 #### Minimum requirements:
 - Conda
-- Unix operating system (tested)
+- Unix operating system (Other OS may work but have not been checked)
   
 All dependencies by custom conda environment yaml for unix systems. Please run `conda env create --name probegen --file=probegen.yaml`
 
