@@ -28,13 +28,13 @@ Then prior to running the pipeline, activate the conda env with `conda activate 
         -F
             --disable-genome-qual-filtering - Turn off filtering genomes which have too many ambiguous basecalls (set by --percent-ambiguous-base-threshold) Default: filtering enabled
         -b
-            --percent-ambiguous-base-threshold. Default=1
+            --percent-ambiguous-base-threshold. Default=5
         -D
             --disable-dustmasker - Turn off dustmasker of low-complexity regions. Default=Dustmasker masking enabled
         -l
             --length - Length of probes to generate (without adapter). Default=52
         -s
-            --step-size - Step size of probes to generate. Default=0
+            --step-size - Step size of probes to generate. Default=5
         -m
             --masked-threshold - Maximum number of reads in a probe that can be masked by dustmasker before the probe is not considered. Default=10
         -r

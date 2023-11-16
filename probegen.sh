@@ -6,7 +6,7 @@ prog_version=0.1.0
 
 # threshold ambiguous bases for genome to be excluded
 runfiltering=true
-percentambiguousbasethreshold="1"
+percentambiguousbasethreshold="5"
 
 # dustmasking options
 rundustmasker=true
@@ -14,7 +14,7 @@ rundustmasker=true
 # probe clustering options
 runclustering=true
 length="52"
-stepsize="1"
+stepsize="5"
 minimumpercentidentity="95"
 maxterminalmismatches="2"
 adapterseq=""
@@ -31,10 +31,10 @@ usage() {
     echo "  -O, --output <file>                              Set the output file (mandatory)"
     echo "Options:"
     echo "  -F, --disable-genome-qual-filtering              Disable removing genomes with given proportion of ambigious bases (default: filtering run)"
-    echo "  -b, --percent-ambiguous-base-threshold <value>   Set the percent ambiguous base threshold for genome inclusion (default: 1)"
+    echo "  -b, --percent-ambiguous-base-threshold <value>   Set the percent ambiguous base threshold for genome inclusion (default: 5)"
     echo "  -D, --disable-dustmasker                            Disable dustmasker (default: dustmasker run)"
     echo "  -l, --length <value>                             Set the length for probes (default: 52)"
-    echo "  -s, --step-size <value>                          Set the step size for probes (default: 1)"
+    echo "  -s, --step-size <value>                          Set the step size for probes (default: 5)"
     echo "  -m, --masked-threshold <value>                   Set the masked threshold for probe inclusion (default: 10)"
     echo "  -r, --randseed <value>                           Set the random seed for probe generation (default: 100)"
     echo "  -C, --disable-clustering                         Disable clustering (default: clustering run)"
@@ -149,13 +149,13 @@ help() { # print help, explanation for all parameters
         -F
             --disable-genome-qual-filtering - Turn off filtering genomes which have too many ambiguous basecalls (set by --percent-ambiguous-base-threshold) Default: filtering enabled
         -b
-            --percent-ambiguous-base-threshold. Default=1
+            --percent-ambiguous-base-threshold. Default=5
         -D
             --disable-dustmasker - Turn off dustmasker of low-complexity regions. Default=Dustmasker masking enabled
         -l
             --length - Length of probes to generate (without adapter). Default=52
         -s
-            --step-size - Step size of probes to generate. Default=0
+            --step-size - Step size of probes to generate. Default=5
         -m
             --masked-threshold - Maximum number of reads in a probe that can be masked by dustmasker before the probe is not considered. Default=10
         -r
