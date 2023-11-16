@@ -1,0 +1,12 @@
+name: probegen
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - r
+  - anaconda
+  - R
+dependencies:
+  - biopython
+  - cd-hit
+  - blast
