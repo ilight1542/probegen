@@ -277,14 +277,14 @@ fi
 ## Add adapter sequence (if provided) and format
 if [[ ! -z "${adapterseq}" ]]; then
     date=$(date)
-    echo "     - ${date}: Adding adapters and formatting tsv as: fasta header    probe"
+    echo "     - ${date}: Adding adapters to probes"
 
-    index=1
-    for i in $(grep -E "[ATCG]" ${file_to_add_apaters})
-        do
-        echo ">${output}_probe_${index}    ${i}${adapterseq}" >> ${output}
-        index=$(( index + 1 ))
-    done
+    while IFS= read -r line; do
+        if [[ ! $line =~ ^\> ]]; then
+            line+="$adapterseq"
+        fi
+        echo "$line"
+    done < "$file_to_add_apaters" > "${output}"
 else
     cp ${tiling_output} ${output}
 fi
