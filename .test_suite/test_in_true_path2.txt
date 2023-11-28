@@ -1,2 +1,0 @@
-true_fasta.fasta.gz
-true_fasta_half_ambiguous.fasta.gz

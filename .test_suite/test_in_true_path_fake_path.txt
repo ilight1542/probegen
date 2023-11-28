@@ -1,2 +1,0 @@
-/my/fake/path.fasta
-true_fasta.fasta.gz
