@@ -88,7 +88,7 @@ Then prior to running the pipeline, activate the conda env with `conda activate 
         -m
             --masked-threshold - Maximum number of reads in a probe that can be masked by dustmasker before the probe is not considered. Default=10
         -r
-            --randseed - Seed for random pick of replacement of non-ATCG bases in probe. Default=100
+            --randseed - Seed for random pick of replacement of non-ATCG bases in probes with ambiguous bases. Default=100
         -C
             --disable-clustering - Turn off clustering of similar probes using cd-hit-est. Default=Clustering enabled
         -i
@@ -110,7 +110,7 @@ Then prior to running the pipeline, activate the conda env with `conda activate 
 
 ### Tips and tricks
 #### Run quality filtering and dustmasking! 
-These two steps are optional but will help reduce poor-quality probes produced. One could also consider running [Conterminator](https://github.com/steineggerlab/conterminator), but this is outside the scope of this pipeline.
+These two steps are optional but they will help reduce poor-quality probes produced. One could also consider running [Conterminator](https://github.com/steineggerlab/conterminator), but this is outside the scope of this pipeline.
 
 #### Clustering parameters have large impacts on the final probe amounts!
 Decreasing `--minimum-percent-identity` or increasing `--max-terminal-mismatches` will quite rapidly reduce the total number of probes output, since more and more distinct probes will be clustered together. You could try running different clustering thresholds by calling the execute_clustering.py script independent of the whole-pipeline.
